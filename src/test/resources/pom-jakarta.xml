@@ -3,10 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.channelape</groupId>
-	<artifactId>shopify-sdk</artifactId>
+	<artifactId>shopify-sdk-jakarta</artifactId>
 	<version>2.5.0</version>
 
-	<name>Shopify SDK</name>
+	<name>Shopify SDK (Jakarta)</name>
 	<description>Java SDK for Shopify REST API.</description>
 	<url>https://github.com/channelape/shopify-sdk</url>
 
@@ -58,7 +58,8 @@
 		<java.version>1.8</java.version>
 		<junit.version>4.13.1</junit.version>
 		<slf4j.version>1.7.22</slf4j.version>
-		<jersey.version>2.25.1</jersey.version>
+		<jersey.version>3.0.3</jersey.version>
+		<jackson.version>2.13.2</jackson.version>
 		<pitest.version>1.4.3</pitest.version>
 		<jacoco.version>0.8.2</jacoco.version>
 	</properties>
@@ -74,20 +75,54 @@
 			<artifactId>jersey-client</artifactId>
 			<version>${jersey.version}</version>
 		</dependency>
+                <dependency>
+                       <groupId>org.glassfish.jersey.inject</groupId>
+                       <artifactId>jersey-hk2</artifactId>
+                       <version>${jersey.version}</version>
+                </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.jaxrs</groupId>
-			<artifactId>jackson-jaxrs-json-provider</artifactId>
-			<version>2.4.0</version>
-		</dependency>
-		<dependency>
+  <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+  <artifactId>jackson-jakarta-rs-json-provider</artifactId>
+  <version>${jackson.version}</version>
+</dependency>
+<!--		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-jaxb</artifactId>
 			<version>${jersey.version}</version>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-json-jackson</artifactId>
 			<version>${jersey.version}</version>
+                        <exclusions>
+                            <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+                            </exclusion>
+                            <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+                            </exclusion>
+                            <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+                            </exclusion>
+                        </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -125,16 +160,17 @@
 			<artifactId>guava-retrying</artifactId>
 			<version>2.0.0</version>
 		</dependency>
-		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-core</artifactId>
-			<version>2.3.0</version>
-		</dependency>
+                <dependency>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>4.0.0</version>
+                </dependency>
+                <dependency>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                        <version>4.0.0</version>
+                        <scope>runtime</scope>
+                </dependency>
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-impl</artifactId>
@@ -174,44 +210,6 @@
 
 	<build>
 		<plugins>
-                        <plugin>
-                                <groupId>org.apache.maven.plugins</groupId>
-                                <artifactId>maven-antrun-plugin</artifactId>
-                                <executions>
-                                        <execution>
-                                                <phase>prepare-package</phase>
-                                                <configuration>
-                                                        <tasks>
-                                                                <copy file="src/test/resources/pom-jakarta.xml" tofile="target/jakarta/pom.xml"/>
-                                                                <copy todir="target/jakarta/src">
-                                                                        <fileset dir="src"/>
-                                                                </copy>
-                                                                <replace token= "import javax.ws" value="import jakarta.ws" dir="target/jakarta/src">
-                                                                        <include name="**/*.java"/>
-                                                                </replace>
-                                                                <replace token= "import javax.xml" value="import jakarta.xml" dir="target/jakarta/src">
-                                                                        <include name="**/*.java"/>
-                                                                </replace>
-                                                                <replace token= "import com.fasterxml.jackson.jakarta.rs.json.JacksonJaxbJsonProvider" value="import com.fasterxml.jackson.jakarta.rs.json.JacksonXmlBindJsonProvider" dir="target/jakarta/src">
-                                                                        <include name="**/*.java"/>
-                                                                </replace>
-                                                                <replace token= "JacksonJaxbJsonProvider" value="JacksonXmlBindJsonProvider" dir="target/jakarta/src">
-                                                                        <include name="**/*.java"/>
-                                                                </replace>
-                                                                <replace token= "import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector" value="import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector" dir="target/jakarta/src">
-                                                                        <include name="**/*.java"/>
-                                                                </replace>
-                                                                <replace token= "JaxbAnnotationIntrospector" value="JakartaXmlBindAnnotationIntrospector" dir="target/jakarta/src">
-                                                                        <include name="**/*.java"/>
-                                                                </replace>
-                                                        </tasks>
-                                                </configuration>
-                                                <goals>
-                                                        <goal>run</goal>
-                                                </goals>
-                                        </execution>
-                                </executions>
-                        </plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -362,4 +360,5 @@
 			</build>
 		</profile>
 	</profiles>
+
 </project>
